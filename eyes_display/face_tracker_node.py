@@ -1,4 +1,5 @@
 import cv2
+import os
 import rclpy
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
@@ -31,7 +32,26 @@ class FaceTrackerNode(Node):
         self.debug_pub = self.create_publisher(Image, debug_topic, 10)
         self.sub = self.create_subscription(Image, image_topic, self.on_image, 10)
 
-        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        cascade_path = None
+        if hasattr(cv2, "data") and hasattr(cv2.data, "haarcascades"):
+            candidate = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
+            if os.path.exists(candidate):
+                cascade_path = candidate
+
+        if cascade_path is None:
+            for candidate in (
+                "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+                "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml",
+            ):
+                if os.path.exists(candidate):
+                    cascade_path = candidate
+                    break
+
+        if cascade_path is None:
+            self.get_logger().error("Failed to locate Haar cascade file.")
+            self.face_cascade = cv2.CascadeClassifier()
+            return
+
         self.face_cascade = cv2.CascadeClassifier(cascade_path)
         if self.face_cascade.empty():
             self.get_logger().error(f"Failed to load Haar cascade: {cascade_path}")
