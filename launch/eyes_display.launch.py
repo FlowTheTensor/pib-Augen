@@ -17,6 +17,13 @@ def generate_launch_description():
                 name="eyes_display",
                 output="screen",
                 parameters=[config_path],
-            )
+            ),
+            Node(
+                package="eyes_display",
+                executable="face_tracker",
+                name="face_tracker",
+                output="screen",
+                parameters=[config_path],
+            ),
         ]
     )

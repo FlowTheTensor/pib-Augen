@@ -66,3 +66,17 @@ Publish `geometry_msgs/Point`:
 ## Hinweise
 - Wenn der OAK‑D‑Node Pixel‑Koordinaten liefert, setze `input_normalized: false` und trage `frame_width`/`frame_height` ein.
 - Das Display nutzt ein einzelnes Topic. Passe `tracking_topic` an deine Pipeline an.
+
+## OAK‑D Lite: Face‑Tracking → Blickrichtung
+Es gibt einen einfachen Face‑Tracker, der Bilddaten von der OAK‑D abonniert und das Blick‑Topic füttert.
+
+### Node
+- `ros2 run eyes_display face_tracker`
+
+### Parameter (config)
+- `image_topic`: ROS‑Bildtopic der OAK‑D (z. B. `/oakd/rgb/image`)
+- `tracking_topic`: Ziel‑Topic für Blickrichtung (Standard `/person/target`)
+- `scale_factor`, `min_neighbors`, `min_size`: OpenCV‑Haar‑Parameter
+
+### Wichtig
+Stelle sicher, dass dein Kamera‑Container das Bildtopic publiziert und `image_topic` in [config/eyes_display.yaml](config/eyes_display.yaml) dazu passt.

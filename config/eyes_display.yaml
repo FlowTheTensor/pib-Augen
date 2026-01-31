@@ -9,3 +9,11 @@ eyes_display:
     screen_height: 480
     render_fps: 60.0
     smoothing_alpha: 0.2
+
+face_tracker:
+  ros__parameters:
+    image_topic: "/display_image"
+    tracking_topic: "/person/target"
+    scale_factor: 1.1
+    min_neighbors: 5
+    min_size: 60
