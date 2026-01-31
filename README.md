@@ -85,6 +85,8 @@ Der Face‑Tracker nutzt standardmäßig `/camera/image_raw`.
 ### Parameter (config)
 - `image_topic`: ROS‑Bildtopic der OAK‑D (z. B. `/oakd/rgb/image`)
 - `tracking_topic`: Ziel‑Topic für Blickrichtung (Standard `/person/target`)
+- `debug_topic`: Debug‑Bild mit Face‑Boxen (Standard `/face_tracker/debug_image`)
+- `debug_enabled`: Debug‑Bild an/aus
 - `scale_factor`, `min_neighbors`, `min_size`: OpenCV‑Haar‑Parameter
 
 ### Wichtig

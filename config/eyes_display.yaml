@@ -14,6 +14,8 @@ face_tracker:
   ros__parameters:
     image_topic: "/camera/image_raw"
     tracking_topic: "/person/target"
+    debug_topic: "/face_tracker/debug_image"
+    debug_enabled: true
     scale_factor: 1.1
     min_neighbors: 5
     min_size: 60

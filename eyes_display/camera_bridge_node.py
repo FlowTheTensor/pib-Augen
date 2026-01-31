@@ -65,7 +65,8 @@ class CameraServiceBridge(Node):
         if frame is None:
             return
 
-        msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        msg = self.bridge.cv2_to_imgmsg(frame_rgb, encoding="rgb8")
         self.pub.publish(msg)
 
 

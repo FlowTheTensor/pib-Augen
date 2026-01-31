@@ -12,18 +12,23 @@ class FaceTrackerNode(Node):
 
         self.declare_parameter("image_topic", "/oakd/rgb/image")
         self.declare_parameter("tracking_topic", "/person/target")
+        self.declare_parameter("debug_topic", "/face_tracker/debug_image")
+        self.declare_parameter("debug_enabled", True)
         self.declare_parameter("scale_factor", 1.1)
         self.declare_parameter("min_neighbors", 5)
         self.declare_parameter("min_size", 60)
 
         image_topic = self.get_parameter("image_topic").get_parameter_value().string_value
         tracking_topic = self.get_parameter("tracking_topic").get_parameter_value().string_value
+        debug_topic = self.get_parameter("debug_topic").get_parameter_value().string_value
+        self.debug_enabled = self.get_parameter("debug_enabled").get_parameter_value().bool_value
         self.scale_factor = self.get_parameter("scale_factor").get_parameter_value().double_value
         self.min_neighbors = self.get_parameter("min_neighbors").get_parameter_value().integer_value
         self.min_size = self.get_parameter("min_size").get_parameter_value().integer_value
 
         self.bridge = CvBridge()
         self.pub = self.create_publisher(Point, tracking_topic, 10)
+        self.debug_pub = self.create_publisher(Image, debug_topic, 10)
         self.sub = self.create_subscription(Image, image_topic, self.on_image, 10)
 
         cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
@@ -45,6 +50,8 @@ class FaceTrackerNode(Node):
         )
 
         if len(faces) == 0:
+            if self.debug_enabled:
+                self.debug_pub.publish(self.bridge.cv2_to_imgmsg(frame, encoding="bgr8"))
             return
 
         # largest face
@@ -64,6 +71,10 @@ class FaceTrackerNode(Node):
         msg_out.y = float(max(-1.0, min(1.0, gy)))
         msg_out.z = 0.0
         self.pub.publish(msg_out)
+
+        if self.debug_enabled:
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            self.debug_pub.publish(self.bridge.cv2_to_imgmsg(frame, encoding="bgr8"))
 
 
 def main() -> None:
