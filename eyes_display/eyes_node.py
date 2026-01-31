@@ -143,7 +143,7 @@ class EyesRenderer:
 
         light_pos = (GLfloat * 4)(0.0, 2.0, 5.0, 1.0)
         glLightfv(GL_LIGHT0, GL_POSITION, light_pos)
-        glClearColor(1.0, 1.0, 1.0, 1.0)
+        glClearColor(0, 1.0, 1.0, 1.0)
 
         self.start_time = time.time()
         self.blink = 0.0
