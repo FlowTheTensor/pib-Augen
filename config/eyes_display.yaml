@@ -1,0 +1,11 @@
+eyes_display:
+  ros__parameters:
+    tracking_topic: "/person/target"
+    input_normalized: true
+    frame_width: 640.0
+    frame_height: 480.0
+    fullscreen: true
+    screen_width: 800
+    screen_height: 480
+    render_fps: 60.0
+    smoothing_alpha: 0.2
