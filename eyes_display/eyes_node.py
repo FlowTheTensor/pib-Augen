@@ -19,7 +19,6 @@ from pyglet.gl import (
     GL_LIGHT0,
     GL_LIGHTING,
     GL_MODELVIEW,
-    GL_QUADS,
     GL_POSITION,
     GL_PROJECTION,
     GLfloat,
@@ -31,12 +30,9 @@ from pyglet.gl import (
     glLoadIdentity,
     glMaterialfv,
     glMatrixMode,
-    glBegin,
-    glEnd,
     glPopMatrix,
     glPushMatrix,
     glTranslatef,
-    glVertex3f,
     glViewport,
 )
 from pyglet.gl import gluNewQuadric, gluPerspective, gluSphere, gluDeleteQuadric
@@ -117,9 +113,17 @@ class EyesRenderer:
     def __init__(self, state: GazeState, params: RenderParams) -> None:
         self.state = state
         self.params = params
+
+        width = params.screen_width
+        height = params.screen_height
+        if params.fullscreen:
+            screen = pyglet.canvas.get_display().get_default_screen()
+            width = screen.width
+            height = screen.height
+
         self.window = pyglet.window.Window(
-            width=params.screen_width,
-            height=params.screen_height,
+            width=width,
+            height=height,
             fullscreen=params.fullscreen,
             caption="eyes_display",
             vsync=True,
@@ -186,31 +190,27 @@ class EyesRenderer:
         glTranslatef(0.0, 0.0, 0.1)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.0, 0.0, 0.0, 1.0))
         gluSphere(self.quadric, pupil_radius, 20, 20)
-        # Eyelids (gray) using two quads that close toward center
+        # Eyelids (gray) as spherical segments
         if self.blink > 0.0:
             lid_color = (GLfloat * 4)(0.6, 0.6, 0.6, 1.0)
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
 
-            z = eyeball_radius * 0.9
-            y_top = eyeball_radius
-            y_bottom = -eyeball_radius
-            cover = 2.0 * eyeball_radius * self.blink
+            lid_radius = eyeball_radius * 1.05
+            lid_z = eyeball_radius * 0.7
+            max_offset = eyeball_radius * 1.3
+            offset = max_offset * (1.0 - self.blink)
 
             # Top lid
-            glBegin(GL_QUADS)
-            glVertex3f(-eyeball_radius, y_top, z)
-            glVertex3f(eyeball_radius, y_top, z)
-            glVertex3f(eyeball_radius, y_top - cover, z)
-            glVertex3f(-eyeball_radius, y_top - cover, z)
-            glEnd()
+            glPushMatrix()
+            glTranslatef(0.0, offset, lid_z)
+            gluSphere(self.quadric, lid_radius, 30, 20)
+            glPopMatrix()
 
             # Bottom lid
-            glBegin(GL_QUADS)
-            glVertex3f(-eyeball_radius, y_bottom + cover, z)
-            glVertex3f(eyeball_radius, y_bottom + cover, z)
-            glVertex3f(eyeball_radius, y_bottom, z)
-            glVertex3f(-eyeball_radius, y_bottom, z)
-            glEnd()
+            glPushMatrix()
+            glTranslatef(0.0, -offset, lid_z)
+            gluSphere(self.quadric, lid_radius, 30, 20)
+            glPopMatrix()
 
         glPopMatrix()
 
