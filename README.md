@@ -20,6 +20,18 @@ Die Parameter liegen in [config/eyes_display.yaml](config/eyes_display.yaml).
 
 ## Ausführen auf dem Raspberry Pi (ohne VS Code)
 
+### Automatisiertes Setup (Host)
+- Script ausführen (installiert python3-pyglet, kopiert Paket in den Container, baut es und zeigt Startbefehl):
+  - `bash scripts/setup_eyes_display.sh`
+- Optional mit Container‑Name und Workspace:
+  - `bash scripts/setup_eyes_display.sh multirepo-ros-display-1 /app/ros2_ws`
+
+### Start direkt im Container (Host)
+- Start‑Script ausführen:
+  - `bash scripts/run_eyes_display.sh`
+- Optional mit Container‑Name und Workspace:
+  - `bash scripts/run_eyes_display.sh multirepo-ros-display-1 /app/ros2_ws`
+
 ### 1) Projekt holen
 - Per Git:
   - `git clone <repo-url> ~/pib-Augen`
