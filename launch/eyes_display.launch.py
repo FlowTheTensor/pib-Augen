@@ -17,13 +17,6 @@ def generate_launch_description():
                 name="eyes_display",
                 output="screen",
                 parameters=[config_path],
-            ),
-            Node(
-                package="eyes_display",
-                executable="mock_publisher",
-                name="eyes_mock_publisher",
-                output="screen",
-                parameters=[{"tracking_topic": "/person/target"}],
-            ),
+            )
         ]
     )
