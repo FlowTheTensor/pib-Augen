@@ -195,6 +195,8 @@ class EyesRenderer:
         glTranslatef(0.0, 0.0, 0.1)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.0, 0.0, 0.0, 1.0))
         gluSphere(self.quadric, pupil_radius, 20, 20)
+        glPopMatrix()
+
         # Eyelids (gray) as spherical caps with growing angle
         if self.blink > 0.0:
             lid_color = (GLfloat * 4)(0.6, 0.6, 0.6, 1.0)
@@ -239,8 +241,6 @@ class EyesRenderer:
                 glNormal3f(x1, y1, z1)
                 glVertex3f(radius * x1, radius * y1, radius * z1)
             glEnd()
-
-        glPopMatrix()
 
     def update(self, _dt: float) -> None:
         t = time.time() - self.start_time
