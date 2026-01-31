@@ -25,5 +25,12 @@ def generate_launch_description():
                 output="screen",
                 parameters=[config_path],
             ),
+            Node(
+                package="eyes_display",
+                executable="camera_bridge",
+                name="camera_bridge",
+                output="screen",
+                parameters=[config_path],
+            ),
         ]
     )

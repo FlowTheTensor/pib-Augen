@@ -24,6 +24,7 @@ setup(
             "eyes_node = eyes_display.eyes_node:main",
             "mock_publisher = eyes_display.mock_publisher:main",
             "face_tracker = eyes_display.face_tracker_node:main",
+            "camera_bridge = eyes_display.camera_bridge_node:main",
         ],
     },
 )

@@ -12,8 +12,14 @@ eyes_display:
 
 face_tracker:
   ros__parameters:
-    image_topic: "/display_image"
+    image_topic: "/camera/image_raw"
     tracking_topic: "/person/target"
     scale_factor: 1.1
     min_neighbors: 5
     min_size: 60
+
+camera_bridge:
+  ros__parameters:
+    service_name: "/get_camera_image"
+    output_topic: "/camera/image_raw"
+    poll_rate: 10.0

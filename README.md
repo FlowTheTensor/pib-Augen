@@ -70,6 +70,15 @@ Publish `geometry_msgs/Point`:
 ## OAK‑D Lite: Face‑Tracking → Blickrichtung
 Es gibt einen einfachen Face‑Tracker, der Bilddaten von der OAK‑D abonniert und das Blick‑Topic füttert.
 
+### Bridge für Kamera‑Service (get_camera_image)
+In deinem Setup liefert `camera_node` kein Image‑Topic, sondern den Service `/get_camera_image` (datatypes/srv/GetCameraImage). Dafür gibt es jetzt einen Bridge‑Node, der den Service zyklisch abfragt und ein `sensor_msgs/Image` publiziert.
+
+- Node: `ros2 run eyes_display camera_bridge`
+- Output‑Topic: `/camera/image_raw` (konfigurierbar)
+- Service: `/get_camera_image` (konfigurierbar)
+
+Der Face‑Tracker nutzt standardmäßig `/camera/image_raw`.
+
 ### Node
 - `ros2 run eyes_display face_tracker`
 
