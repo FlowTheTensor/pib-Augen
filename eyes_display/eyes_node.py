@@ -1,5 +1,4 @@
 import math
-import random
 import threading
 import time
 from dataclasses import dataclass
@@ -147,12 +146,7 @@ class EyesRenderer:
         glClearColor(1.0, 1.0, 1.0, 1.0)
 
         self.start_time = time.time()
-        self.blink_left = 0.0
-        self.blink_right = 0.0
-        self.blink_start = 0.0
-        self.blink_duration = 0.22
-        self.blink_mode = "both"
-        self.next_blink_time = self.start_time + self._random_blink_interval()
+        self.blink = 0.0
 
         pyglet.clock.schedule_interval(self.update, 1.0 / params.render_fps)
 
@@ -171,10 +165,10 @@ class EyesRenderer:
         glTranslatef(0.0, 0.0, -6.0)
 
         gx, gy = self.state.get_current(self.params.smoothing_alpha)
-        self.draw_eye(-1.7, 0.7, gx, gy, self.blink_left)
-        self.draw_eye(1.7, 0.7, gx, gy, self.blink_right)
+        self.draw_eye(-1.7, 0.7, gx, gy)
+        self.draw_eye(1.7, 0.7, gx, gy)
 
-    def draw_eye(self, cx: float, cy: float, gx: float, gy: float, blink: float) -> None:
+    def draw_eye(self, cx: float, cy: float, gx: float, gy: float) -> None:
         scale = 1.2
         eyeball_radius = 1.0 * scale
         iris_radius = 0.45 * scale
@@ -205,12 +199,12 @@ class EyesRenderer:
         glPopMatrix()
 
         # Eyelids (gray) as spherical caps with growing angle
-        if blink > 0.0:
+        if self.blink > 0.0:
             lid_color = (GLfloat * 4)(0.8, 0.8, 0.8, 1.0)
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
 
             lid_radius = eyeball_radius * 1.02
-            theta = blink * (math.pi / 2.0)
+            theta = self.blink * (math.pi / 2.0)
 
             glPushMatrix()
             glTranslatef(0.0, 0.0, eyeball_radius * 0.25)
@@ -252,27 +246,15 @@ class EyesRenderer:
             glEnd()
 
     def update(self, _dt: float) -> None:
-        now = time.time()
-        if now >= self.next_blink_time and self.blink_left == 0.0 and self.blink_right == 0.0:
-            self.blink_duration = random.uniform(0.16, 0.30)
-            self.blink_start = now
-            self.blink_mode = "both" if random.random() < 0.9 else random.choice(["left", "right"])
-
-        if self.blink_start > 0.0:
-            elapsed = now - self.blink_start
-            if elapsed <= self.blink_duration:
-                half = self.blink_duration / 2.0
-                value = max(0.0, 1.0 - abs(elapsed - half) / half)
-                self.blink_left = value if self.blink_mode in ("both", "left") else 0.0
-                self.blink_right = value if self.blink_mode in ("both", "right") else 0.0
-            else:
-                self.blink_left = 0.0
-                self.blink_right = 0.0
-                self.blink_start = 0.0
-                self.next_blink_time = now + self._random_blink_interval()
-
-    def _random_blink_interval(self) -> float:
-        return random.uniform(1.0, 5.0)
+        t = time.time() - self.start_time
+        period = 5.0
+        duration = 0.25
+        phase = t % period
+        if phase < duration:
+            half = duration / 2.0
+            self.blink = max(0.0, 1.0 - abs(phase - half) / half)
+        else:
+            self.blink = 0.0
 
     def on_close(self) -> None:
         gluDeleteQuadric(self.quadric)
