@@ -161,6 +161,8 @@ class EyesRenderer:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glViewport(0, 0, self.window.width, self.window.height)
 
+        self._update_blink(time.time())
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         aspect = self.window.width / max(1.0, self.window.height)
@@ -252,8 +254,9 @@ class EyesRenderer:
             glEnd()
 
     def update(self, _dt: float) -> None:
-        now = time.time()
+        self._update_blink(time.time())
 
+    def _update_blink(self, now: float) -> None:
         if now >= self.next_blink_time and self.blink_left == 0.0 and self.blink_right == 0.0:
             self.blink_duration = random.uniform(0.18, 0.35)
             self.blink_start = now
