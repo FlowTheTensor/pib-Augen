@@ -91,3 +91,18 @@ Der Face‑Tracker nutzt standardmäßig `/camera/image_raw`.
 
 ### Wichtig
 Stelle sicher, dass dein Kamera‑Container das Bildtopic publiziert und `image_topic` in [config/eyes_display.yaml](config/eyes_display.yaml) dazu passt.
+
+## OAK‑D Lite: Direktes Tracking (ohne Kamera‑Container)
+Wenn du den Kamera‑Container stoppst, kannst du die OAK‑D Lite direkt in Python nutzen (DepthAI‑SDK).
+
+### 1) Kamera‑Container stoppen
+- `docker stop multirepo-ros-camera-1`
+
+### 2) DepthAI installieren
+- `python3 -m pip install depthai`
+
+### 3) Starten
+- `ros2 launch eyes_display eyes_display_depthai.launch.py`
+
+### Parameter
+Die DepthAI‑Parameter liegen in [config/eyes_display.yaml](config/eyes_display.yaml) unter `depthai_face_tracker`.

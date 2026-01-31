@@ -9,7 +9,13 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/eyes_display"]),
         ("share/eyes_display", ["package.xml"]),
-        ("share/eyes_display/launch", ["launch/eyes_display.launch.py"]),
+        (
+            "share/eyes_display/launch",
+            [
+                "launch/eyes_display.launch.py",
+                "launch/eyes_display_depthai.launch.py",
+            ],
+        ),
         ("share/eyes_display/config", ["config/eyes_display.yaml"]),
     ],
     install_requires=["setuptools"],
@@ -25,6 +31,7 @@ setup(
             "mock_publisher = eyes_display.mock_publisher:main",
             "face_tracker = eyes_display.face_tracker_node:main",
             "camera_bridge = eyes_display.camera_bridge_node:main",
+            "depthai_face_tracker = eyes_display.depthai_face_tracker_node:main",
         ],
     },
 )
