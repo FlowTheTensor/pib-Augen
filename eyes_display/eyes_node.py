@@ -27,6 +27,7 @@ from pyglet.gl import (
     glClearColor,
     glColor3f,
     glEnable,
+    glDisable,
     glLightfv,
     glLoadIdentity,
     glMaterialfv,
@@ -199,18 +200,20 @@ class EyesRenderer:
 
         # Eyelids (gray) as spherical caps with growing angle
         if self.blink > 0.0:
-            lid_color = (GLfloat * 4)(0.6, 0.6, 0.6, 1.0)
+            lid_color = (GLfloat * 4)(0.35, 0.35, 0.35, 1.0)
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
 
             lid_radius = eyeball_radius * 1.02
             theta = self.blink * (math.pi / 2.0)
 
             glPushMatrix()
-            glTranslatef(0.0, 0.0, eyeball_radius * 0.08)
+            glTranslatef(0.0, 0.0, eyeball_radius * 0.25)
+            glDisable(GL_DEPTH_TEST)
             # Upper lid: from north pole to theta
             self.draw_sphere_segment(lid_radius, 0.0, theta)
             # Lower lid: from (pi - theta) to south pole
             self.draw_sphere_segment(lid_radius, math.pi - theta, math.pi)
+            glEnable(GL_DEPTH_TEST)
             glPopMatrix()
 
         glPopMatrix()
