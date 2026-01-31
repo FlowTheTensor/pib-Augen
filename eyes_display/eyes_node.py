@@ -148,8 +148,8 @@ class EyesRenderer:
         glTranslatef(0.0, 0.0, -6.0)
 
         gx, gy = self.state.get_current(self.params.smoothing_alpha)
-        self.draw_eye(-1.5, 0.0, gx, gy)
-        self.draw_eye(1.5, 0.0, gx, gy)
+        self.draw_eye(-1.5, 0.7, gx, gy)
+        self.draw_eye(1.5, 0.7, gx, gy)
 
     def draw_eye(self, cx: float, cy: float, gx: float, gy: float) -> None:
         eyeball_radius = 1.0
@@ -171,7 +171,7 @@ class EyesRenderer:
         # Iris
         glPushMatrix()
         glTranslatef(iris_x, iris_y, iris_z)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.1, 0.5, 0.9, 1.0))
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.35, 0.05, 0.05, 1.0))
         gluSphere(self.quadric, iris_radius, 30, 30)
 
         # Pupil
