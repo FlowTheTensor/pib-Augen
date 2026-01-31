@@ -19,6 +19,7 @@ from pyglet.gl import (
     GL_LIGHT0,
     GL_LIGHTING,
     GL_MODELVIEW,
+    GL_QUADS,
     GL_POSITION,
     GL_PROJECTION,
     GLfloat,
@@ -30,9 +31,12 @@ from pyglet.gl import (
     glLoadIdentity,
     glMaterialfv,
     glMatrixMode,
+    glBegin,
+    glEnd,
     glPopMatrix,
     glPushMatrix,
     glTranslatef,
+    glVertex3f,
     glViewport,
 )
 from pyglet.gl import gluNewQuadric, gluPerspective, gluSphere, gluDeleteQuadric
@@ -129,7 +133,10 @@ class EyesRenderer:
 
         light_pos = (GLfloat * 4)(0.0, 2.0, 5.0, 1.0)
         glLightfv(GL_LIGHT0, GL_POSITION, light_pos)
-        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClearColor(1.0, 1.0, 1.0, 1.0)
+
+        self.start_time = time.time()
+        self.blink = 0.0
 
         pyglet.clock.schedule_interval(self.update, 1.0 / params.render_fps)
 
@@ -148,13 +155,14 @@ class EyesRenderer:
         glTranslatef(0.0, 0.0, -6.0)
 
         gx, gy = self.state.get_current(self.params.smoothing_alpha)
-        self.draw_eye(-1.5, 0.7, gx, gy)
-        self.draw_eye(1.5, 0.7, gx, gy)
+        self.draw_eye(-1.7, 0.7, gx, gy)
+        self.draw_eye(1.7, 0.7, gx, gy)
 
     def draw_eye(self, cx: float, cy: float, gx: float, gy: float) -> None:
-        eyeball_radius = 1.0
-        iris_radius = 0.45
-        pupil_radius = 0.2
+        scale = 1.2
+        eyeball_radius = 1.0 * scale
+        iris_radius = 0.45 * scale
+        pupil_radius = 0.2 * scale
 
         gaze_scale = 0.35
         iris_x = gx * gaze_scale
@@ -165,7 +173,7 @@ class EyesRenderer:
         glTranslatef(cx, cy, 0.0)
 
         # Eyeball
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(1.0, 1.0, 1.0, 1.0))
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.9, 0.9, 0.9, 1.0))
         gluSphere(self.quadric, eyeball_radius, 40, 40)
 
         # Iris
@@ -178,12 +186,46 @@ class EyesRenderer:
         glTranslatef(0.0, 0.0, 0.1)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.0, 0.0, 0.0, 1.0))
         gluSphere(self.quadric, pupil_radius, 20, 20)
+        # Eyelids (gray) using two quads that close toward center
+        if self.blink > 0.0:
+            lid_color = (GLfloat * 4)(0.6, 0.6, 0.6, 1.0)
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
+
+            z = eyeball_radius * 0.9
+            y_top = eyeball_radius
+            y_bottom = -eyeball_radius
+            cover = 2.0 * eyeball_radius * self.blink
+
+            # Top lid
+            glBegin(GL_QUADS)
+            glVertex3f(-eyeball_radius, y_top, z)
+            glVertex3f(eyeball_radius, y_top, z)
+            glVertex3f(eyeball_radius, y_top - cover, z)
+            glVertex3f(-eyeball_radius, y_top - cover, z)
+            glEnd()
+
+            # Bottom lid
+            glBegin(GL_QUADS)
+            glVertex3f(-eyeball_radius, y_bottom + cover, z)
+            glVertex3f(eyeball_radius, y_bottom + cover, z)
+            glVertex3f(eyeball_radius, y_bottom, z)
+            glVertex3f(-eyeball_radius, y_bottom, z)
+            glEnd()
+
         glPopMatrix()
 
         glPopMatrix()
 
     def update(self, _dt: float) -> None:
-        pass
+        t = time.time() - self.start_time
+        period = 5.0
+        duration = 0.25
+        phase = t % period
+        if phase < duration:
+            half = duration / 2.0
+            self.blink = max(0.0, 1.0 - abs(phase - half) / half)
+        else:
+            self.blink = 0.0
 
     def on_close(self) -> None:
         gluDeleteQuadric(self.quadric)
