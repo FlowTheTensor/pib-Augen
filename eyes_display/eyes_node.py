@@ -143,7 +143,7 @@ class EyesRenderer:
 
         light_pos = (GLfloat * 4)(0.0, 2.0, 5.0, 1.0)
         glLightfv(GL_LIGHT0, GL_POSITION, light_pos)
-        glClearColor(0, 1.0, 1.0, 1.0)
+        glClearColor(1.0, 1.0, 1.0, 1.0)
 
         self.start_time = time.time()
         self.blink = 0.0
@@ -200,7 +200,7 @@ class EyesRenderer:
 
         # Eyelids (gray) as spherical caps with growing angle
         if self.blink > 0.0:
-            lid_color = (GLfloat * 4)(0.35, 0.35, 0.35, 1.0)
+            lid_color = (GLfloat * 4)(0.1, 0.1, 0.1, 1.0)
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
 
             lid_radius = eyeball_radius * 1.02
