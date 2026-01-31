@@ -19,6 +19,7 @@ from pyglet.gl import (
     GL_LIGHT0,
     GL_LIGHTING,
     GL_MODELVIEW,
+    GL_QUAD_STRIP,
     GL_POSITION,
     GL_PROJECTION,
     GLfloat,
@@ -30,9 +31,13 @@ from pyglet.gl import (
     glLoadIdentity,
     glMaterialfv,
     glMatrixMode,
+    glBegin,
+    glEnd,
+    glNormal3f,
     glPopMatrix,
     glPushMatrix,
     glTranslatef,
+    glVertex3f,
     glViewport,
 )
 from pyglet.gl import gluNewQuadric, gluPerspective, gluSphere, gluDeleteQuadric
@@ -190,29 +195,50 @@ class EyesRenderer:
         glTranslatef(0.0, 0.0, 0.1)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.0, 0.0, 0.0, 1.0))
         gluSphere(self.quadric, pupil_radius, 20, 20)
-        # Eyelids (gray) as spherical segments
+        # Eyelids (gray) as spherical caps with growing angle
         if self.blink > 0.0:
             lid_color = (GLfloat * 4)(0.6, 0.6, 0.6, 1.0)
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
 
-            lid_radius = eyeball_radius * 1.05
-            lid_z = eyeball_radius * 0.7
-            max_offset = eyeball_radius * 1.3
-            offset = max_offset * (1.0 - self.blink)
+            lid_radius = eyeball_radius * 1.02
+            theta = self.blink * (math.pi / 2.0)
 
-            # Top lid
             glPushMatrix()
-            glTranslatef(0.0, offset, lid_z)
-            gluSphere(self.quadric, lid_radius, 30, 20)
-            glPopMatrix()
-
-            # Bottom lid
-            glPushMatrix()
-            glTranslatef(0.0, -offset, lid_z)
-            gluSphere(self.quadric, lid_radius, 30, 20)
+            glTranslatef(0.0, 0.0, eyeball_radius * 0.08)
+            # Upper lid: from north pole to theta
+            self.draw_sphere_segment(lid_radius, 0.0, theta)
+            # Lower lid: from (pi - theta) to south pole
+            self.draw_sphere_segment(lid_radius, math.pi - theta, math.pi)
             glPopMatrix()
 
         glPopMatrix()
+
+    def draw_sphere_segment(
+        self, radius: float, theta_start: float, theta_end: float, slices: int = 36, stacks: int = 12
+    ) -> None:
+        if theta_end <= theta_start:
+            return
+
+        for i in range(stacks):
+            t0 = theta_start + (theta_end - theta_start) * (i / stacks)
+            t1 = theta_start + (theta_end - theta_start) * ((i + 1) / stacks)
+            glBegin(GL_QUAD_STRIP)
+            for j in range(slices + 1):
+                phi = 2.0 * math.pi * (j / slices)
+
+                x0 = math.sin(t0) * math.cos(phi)
+                y0 = math.cos(t0)
+                z0 = math.sin(t0) * math.sin(phi)
+
+                x1 = math.sin(t1) * math.cos(phi)
+                y1 = math.cos(t1)
+                z1 = math.sin(t1) * math.sin(phi)
+
+                glNormal3f(x0, y0, z0)
+                glVertex3f(radius * x0, radius * y0, radius * z0)
+                glNormal3f(x1, y1, z1)
+                glVertex3f(radius * x1, radius * y1, radius * z1)
+            glEnd()
 
         glPopMatrix()
 
