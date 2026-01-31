@@ -149,7 +149,7 @@ class EyesRenderer:
         self.blink_left = 0.0
         self.blink_right = 0.0
         self.next_blink_time = self.start_time + self._random_blink_interval()
-        self.blink_duration = 0.2
+        self.blink_duration = 0.25
         self.blink_start = 0.0
         self.blink_mode = "both"
 
@@ -205,11 +205,11 @@ class EyesRenderer:
 
         # Eyelids (gray) as spherical caps with growing angle
         if blink > 0.0:
-            lid_color = (GLfloat * 4)(0.6, 0.6, 0.6, 1.0)
+            lid_color = (GLfloat * 4)(0.45, 0.45, 0.45, 1.0)
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
 
             lid_radius = eyeball_radius * 1.02
-            theta = blink * (math.pi / 2.0)
+            theta = blink * (math.pi * 0.65)
 
             glPushMatrix()
             glTranslatef(0.0, 0.0, eyeball_radius * 0.08)
@@ -252,7 +252,7 @@ class EyesRenderer:
         now = time.time()
 
         if now >= self.next_blink_time and self.blink_left == 0.0 and self.blink_right == 0.0:
-            self.blink_duration = random.uniform(0.12, 0.28)
+            self.blink_duration = random.uniform(0.18, 0.35)
             self.blink_start = now
             self.blink_mode = "both" if random.random() < 0.9 else random.choice(["left", "right"])
 
@@ -270,7 +270,7 @@ class EyesRenderer:
                 self.next_blink_time = now + self._random_blink_interval()
 
     def _random_blink_interval(self) -> float:
-        return random.uniform(1.0, 5.0)
+        return random.uniform(1.0, 3.0)
 
     def on_close(self) -> None:
         gluDeleteQuadric(self.quadric)
