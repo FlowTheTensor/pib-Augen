@@ -12,7 +12,7 @@ import depthai as dai
 
 def build_pipeline(width: int, height: int, fps: float) -> dai.Pipeline:
     pipeline = dai.Pipeline()
-    cam = pipeline.createColorCamera()
+    cam = pipeline.create(dai.node.ColorCamera)
     cam.setPreviewSize(int(width), int(height))
     cam.setInterleaved(False)
     cam.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
