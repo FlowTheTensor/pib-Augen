@@ -12,15 +12,14 @@ import depthai as dai
 
 def build_pipeline(width: int, height: int, fps: float) -> dai.Pipeline:
     pipeline = dai.Pipeline()
-    cam = pipeline.create(dai.node.ColorCamera)
-    cam.setPreviewSize(int(width), int(height))
-    cam.setInterleaved(False)
-    cam.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
+    cam = pipeline.create(dai.node.Camera)
     cam.setFps(float(fps))
+    cam.setSize((int(width), int(height)))
+    cam.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
 
-    xout = pipeline.createXLinkOut()
+    xout = pipeline.create(dai.node.XLinkOut)
     xout.setStreamName("preview")
-    cam.preview.link(xout.input)
+    cam.video.link(xout.input)
     return pipeline
 
 
