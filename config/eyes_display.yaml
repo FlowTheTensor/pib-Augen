@@ -4,6 +4,8 @@ eyes_display:
     input_normalized: true
     frame_width: 640.0
     frame_height: 480.0
+    background_enabled: true
+    background_topic: "/face_tracker/debug_image"
     fullscreen: true
     screen_width: 800
     screen_height: 480

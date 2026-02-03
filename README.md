@@ -106,3 +106,9 @@ Wenn du den Kamera‑Container stoppst, kannst du die OAK‑D Lite direkt in Pyt
 
 ### Parameter
 Die DepthAI‑Parameter liegen in [config/eyes_display.yaml](config/eyes_display.yaml) unter `depthai_face_tracker`.
+
+### Kontrollausgabe (Hintergrundbild)
+Das Augen‑Node kann das Debug‑Bild des Face‑Trackers als Hintergrund anzeigen.
+Das ist standardmäßig aktiv über:
+- `eyes_display.background_enabled: true`
+- `eyes_display.background_topic: /face_tracker/debug_image`

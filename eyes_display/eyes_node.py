@@ -2,11 +2,14 @@ import math
 import threading
 import time
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
+import numpy as np
 import rclpy
+from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from rclpy.node import Node
+from sensor_msgs.msg import Image
 
 import pyglet
 from pyglet.gl import (
@@ -32,6 +35,7 @@ from pyglet.gl import (
     glLoadIdentity,
     glMaterialfv,
     glMatrixMode,
+    glOrtho,
     glBegin,
     glEnd,
     glNormal3f,
@@ -76,15 +80,38 @@ class GazeState:
             return self._current
 
 
+class BackgroundState:
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._frame: Optional[np.ndarray] = None
+        self._dirty = False
+
+    def set_frame(self, frame: np.ndarray) -> None:
+        with self._lock:
+            self._frame = frame
+            self._dirty = True
+
+    def get_frame(self) -> Tuple[Optional[np.ndarray], bool]:
+        with self._lock:
+            frame = self._frame
+            dirty = self._dirty
+            self._dirty = False
+            return frame, dirty
+
+
 class EyeTrackingNode(Node):
-    def __init__(self, state: GazeState) -> None:
+    def __init__(self, state: GazeState, background: Optional[BackgroundState] = None) -> None:
         super().__init__("eyes_display")
         self.state = state
+        self.background = background
+        self.bridge = CvBridge()
 
         self.declare_parameter("tracking_topic", "/person/target")
         self.declare_parameter("input_normalized", True)
         self.declare_parameter("frame_width", 640.0)
         self.declare_parameter("frame_height", 480.0)
+        self.declare_parameter("background_enabled", False)
+        self.declare_parameter("background_topic", "/face_tracker/debug_image")
 
         topic = self.get_parameter("tracking_topic").get_parameter_value().string_value
         self.input_normalized = (
@@ -96,9 +123,23 @@ class EyeTrackingNode(Node):
         self.frame_height = (
             self.get_parameter("frame_height").get_parameter_value().double_value
         )
+        self.background_enabled = (
+            self.get_parameter("background_enabled").get_parameter_value().bool_value
+        )
+        self.background_topic = (
+            self.get_parameter("background_topic").get_parameter_value().string_value
+        )
 
         self.sub = self.create_subscription(Point, topic, self.on_point, 10)
         self.get_logger().info(f"Listening for tracking on {topic}")
+
+        if self.background_enabled and self.background is not None:
+            self.bg_sub = self.create_subscription(
+                Image, self.background_topic, self.on_background, 1
+            )
+            self.get_logger().info(
+                f"Background image enabled on {self.background_topic}"
+            )
 
     def on_point(self, msg: Point) -> None:
         if self.input_normalized:
@@ -114,11 +155,27 @@ class EyeTrackingNode(Node):
 
         self.state.set_target(gx, gy)
 
+    def on_background(self, msg: Image) -> None:
+        if not self.background_enabled or self.background is None:
+            return
+
+        try:
+            frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
+        except Exception as exc:
+            self.get_logger().warn(f"Failed to decode background image: {exc}")
+            return
+
+        if frame is not None:
+            self.background.set_frame(frame)
+
 
 class EyesRenderer:
-    def __init__(self, state: GazeState, params: RenderParams) -> None:
+    def __init__(self, state: GazeState, params: RenderParams, background: Optional[BackgroundState] = None) -> None:
         self.state = state
         self.params = params
+        self.background = background
+        self.background_image = None
+        self.background_size = None
 
         width = params.screen_width
         height = params.screen_height
@@ -154,6 +211,28 @@ class EyesRenderer:
         self.window.clear()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glViewport(0, 0, self.window.width, self.window.height)
+
+        if self.background is not None:
+            frame, dirty = self.background.get_frame()
+            if frame is not None and (dirty or self.background_size != frame.shape[:2]):
+                height, width = frame.shape[:2]
+                flipped = np.flipud(frame)
+                self.background_image = pyglet.image.ImageData(
+                    width, height, "RGB", flipped.tobytes(), pitch=width * 3
+                )
+                self.background_size = (height, width)
+
+            if self.background_image is not None:
+                glDisable(GL_DEPTH_TEST)
+                glDisable(GL_LIGHTING)
+                glMatrixMode(GL_PROJECTION)
+                glLoadIdentity()
+                glOrtho(0, self.window.width, 0, self.window.height, -1, 1)
+                glMatrixMode(GL_MODELVIEW)
+                glLoadIdentity()
+                self.background_image.blit(0, 0, width=self.window.width, height=self.window.height)
+                glEnable(GL_LIGHTING)
+                glEnable(GL_DEPTH_TEST)
 
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -282,14 +361,15 @@ def build_params(node: Node) -> RenderParams:
 def main() -> None:
     rclpy.init()
     state = GazeState()
-    node = EyeTrackingNode(state)
+    background = BackgroundState()
+    node = EyeTrackingNode(state, background)
 
     params = build_params(node)
 
     ros_thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
     ros_thread.start()
 
-    renderer = EyesRenderer(state, params)
+    renderer = EyesRenderer(state, params, background)
 
     try:
         pyglet.app.run()
