@@ -1,61 +1,62 @@
 #!/usr/bin/env python3
-"""
-DepthAI preview (OAK-D Lite) without ROS.
-Shows the live camera stream in a window.
-"""
-
-import argparse
 
 import cv2
 import depthai as dai
+import time
 
+# Connect to device and start pipeline
+with dai.Device() as device:
+    # Device name
+    print('Device name:', device.getDeviceName())
+    # Bootloader version
+    if device.getBootloaderVersion() is not None:
+        print('Bootloader version:', device.getBootloaderVersion())
+    # Print out usb speed
+    print('Usb speed:', device.getUsbSpeed().name)
+    # Connected cameras
+    print('Connected cameras:', device.getConnectedCameraFeatures())
 
-def build_pipeline(width: int, height: int, fps: float) -> dai.Pipeline:
+    # Create pipeline
     pipeline = dai.Pipeline()
-    cam = pipeline.create(dai.node.Camera)
-    cam.setFps(float(fps))
-    cam.setSize((int(width), int(height)))
-    cam.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
+    cams = device.getConnectedCameraFeatures()
+    streams = []
+    for cam in cams:
+        print(str(cam), str(cam.socket), cam.socket)
+        c = pipeline.create(dai.node.Camera)
+        x = pipeline.create(dai.node.XLinkOut)
+        c.preview.link(x.input)
+        c.setBoardSocket(cam.socket)
+        stream = str(cam.socket)
+        if cam.name:
+            stream = f'{cam.name} ({stream})'
+        x.setStreamName(stream)
+        streams.append(stream)
 
-    xout = pipeline.create(dai.node.XLinkOut)
-    xout.setStreamName("preview")
-    cam.video.link(xout.input)
-    return pipeline
+    # Start pipeline
+    device.startPipeline(pipeline)
+    fpsCounter = {}
+    lastFpsCount = {}
+    tfps = time.time()
+    while not device.isClosed():
+        queueNames = device.getQueueEvents(streams)
+        for stream in queueNames:
+            messages = device.getOutputQueue(stream).tryGetAll()
+            fpsCounter[stream] = fpsCounter.get(stream, 0.0) + len(messages)
+            for message in messages:
+                # Display arrived frames
+                if type(message) == dai.ImgFrame:
+                    # render fps
+                    fps = lastFpsCount.get(stream, 0)
+                    frame = message.getCvFrame()
+                    cv2.putText(frame, "Fps: {:.2f}".format(fps), (10, 10), cv2.FONT_HERSHEY_TRIPLEX, 0.4, (255,255,255))
+                    cv2.imshow(stream, frame)
 
+        if time.time() - tfps >= 1.0:
+            scale = time.time() - tfps
+            for stream in fpsCounter.keys():
+                lastFpsCount[stream] = fpsCounter[stream] / scale
+            fpsCounter = {}
+            tfps = time.time()
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="DepthAI camera preview")
-    parser.add_argument("--width", type=int, default=640)
-    parser.add_argument("--height", type=int, default=400)
-    parser.add_argument("--fps", type=float, default=30.0)
-    return parser.parse_args()
-
-
-def main() -> None:
-    args = parse_args()
-    pipeline = build_pipeline(args.width, args.height, args.fps)
-
-    with dai.Device(pipeline) as device:
-        queue = device.getOutputQueue("preview", maxSize=1, blocking=False)
-
-        window_name = "OAK-D Preview - Press 'q' to quit"
-        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-
-        while True:
-            packet = queue.tryGet()
-            if packet is None:
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-                continue
-
-            frame = packet.getCvFrame()
-            cv2.imshow(window_name, frame)
-
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
-
-    cv2.destroyAllWindows()
-
-
-if __name__ == "__main__":
-    main()
+        if cv2.waitKey(1) == ord('q'):
+            break
