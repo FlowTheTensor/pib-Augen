@@ -7,12 +7,13 @@ import cv2
 import depthai as dai
 import numpy as np
 import pyglet
-from pyglet import gl
-from pyglet.gl import gluDeleteQuadric, gluNewQuadric, gluPerspective, gluSphere
 
 pyglet.options["shadow_window"] = False
 if "PYGLET_PLATFORM" in os.environ:
     pyglet.options["platform"] = os.environ["PYGLET_PLATFORM"]
+
+from pyglet import gl
+from pyglet.gl import gluDeleteQuadric, gluNewQuadric, gluPerspective, gluSphere
 
 
 class DepthAICamera:
