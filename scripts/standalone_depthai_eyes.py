@@ -7,43 +7,12 @@ import cv2
 import depthai as dai
 import numpy as np
 import pyglet
+from pyglet import gl
+from pyglet.gl import gluDeleteQuadric, gluNewQuadric, gluPerspective, gluSphere
 
 pyglet.options["shadow_window"] = False
 if "PYGLET_PLATFORM" in os.environ:
     pyglet.options["platform"] = os.environ["PYGLET_PLATFORM"]
-from pyglet.gl import (
-    GL_AMBIENT_AND_DIFFUSE,
-    GL_COLOR_BUFFER_BIT,
-    GL_DEPTH_BUFFER_BIT,
-    GL_DEPTH_TEST,
-    GL_FRONT_AND_BACK,
-    GL_LIGHT0,
-    GL_LIGHTING,
-    GL_MODELVIEW,
-    GL_POSITION,
-    GL_PROJECTION,
-    GL_QUAD_STRIP,
-    GLfloat,
-    glBegin,
-    glClear,
-    glClearColor,
-    glColor3f,
-    glDisable,
-    glEnable,
-    glEnd,
-    glLightfv,
-    glLoadIdentity,
-    glMaterialfv,
-    glMatrixMode,
-    glNormal3f,
-    glOrtho,
-    glPopMatrix,
-    glPushMatrix,
-    glTranslatef,
-    glVertex3f,
-    glViewport,
-)
-from pyglet.gl import gluDeleteQuadric, gluNewQuadric, gluPerspective, gluSphere
 
 
 class DepthAICamera:
@@ -106,12 +75,12 @@ class EyesApp:
         self.window.push_handlers(self)
 
         self.quadric = gluNewQuadric()
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)
-        light_pos = (GLfloat * 4)(0.0, 2.0, 5.0, 1.0)
-        glLightfv(GL_LIGHT0, GL_POSITION, light_pos)
-        glClearColor(1.0, 1.0, 1.0, 1.0)
+        gl.glEnable(gl.GL_DEPTH_TEST)
+        gl.glEnable(gl.GL_LIGHTING)
+        gl.glEnable(gl.GL_LIGHT0)
+        light_pos = (gl.GLfloat * 4)(0.0, 2.0, 5.0, 1.0)
+        gl.glLightfv(gl.GL_LIGHT0, gl.GL_POSITION, light_pos)
+        gl.glClearColor(1.0, 1.0, 1.0, 1.0)
 
         pyglet.clock.schedule_interval(self.update, 1.0 / args.render_fps)
 
@@ -135,29 +104,29 @@ class EyesApp:
 
     def on_draw(self) -> None:
         self.window.clear()
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glViewport(0, 0, self.window.width, self.window.height)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        gl.glViewport(0, 0, self.window.width, self.window.height)
 
         if self.background_image is not None:
-            glDisable(GL_DEPTH_TEST)
-            glDisable(GL_LIGHTING)
-            glMatrixMode(GL_PROJECTION)
-            glLoadIdentity()
-            glOrtho(0, self.window.width, 0, self.window.height, -1, 1)
-            glMatrixMode(GL_MODELVIEW)
-            glLoadIdentity()
+            gl.glDisable(gl.GL_DEPTH_TEST)
+            gl.glDisable(gl.GL_LIGHTING)
+            gl.glMatrixMode(gl.GL_PROJECTION)
+            gl.glLoadIdentity()
+            gl.glOrtho(0, self.window.width, 0, self.window.height, -1, 1)
+            gl.glMatrixMode(gl.GL_MODELVIEW)
+            gl.glLoadIdentity()
             self.background_image.blit(0, 0, width=self.window.width, height=self.window.height)
-            glEnable(GL_LIGHTING)
-            glEnable(GL_DEPTH_TEST)
+            gl.glEnable(gl.GL_LIGHTING)
+            gl.glEnable(gl.GL_DEPTH_TEST)
 
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
         aspect = self.window.width / max(1.0, self.window.height)
         gluPerspective(45.0, aspect, 0.1, 100.0)
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        glTranslatef(0.0, 0.0, -6.0)
+        gl.glMatrixMode(gl.GL_MODELVIEW)
+        gl.glLoadIdentity()
+        gl.glTranslatef(0.0, 0.0, -6.0)
 
         gx, gy = self.current
         self.draw_eye(-1.7, 0.7, gx, gy)
@@ -174,38 +143,50 @@ class EyesApp:
         iris_y = gy * gaze_scale
         iris_z = 0.85
 
-        glPushMatrix()
-        glTranslatef(cx, cy, 0.0)
+        gl.glPushMatrix()
+        gl.glTranslatef(cx, cy, 0.0)
 
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.9, 0.9, 0.9, 1.0))
+        gl.glMaterialfv(
+            gl.GL_FRONT_AND_BACK,
+            gl.GL_AMBIENT_AND_DIFFUSE,
+            (gl.GLfloat * 4)(0.9, 0.9, 0.9, 1.0),
+        )
         gluSphere(self.quadric, eyeball_radius, 40, 40)
 
-        glPushMatrix()
-        glTranslatef(iris_x, iris_y, iris_z)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.35, 0.05, 0.05, 1.0))
+        gl.glPushMatrix()
+        gl.glTranslatef(iris_x, iris_y, iris_z)
+        gl.glMaterialfv(
+            gl.GL_FRONT_AND_BACK,
+            gl.GL_AMBIENT_AND_DIFFUSE,
+            (gl.GLfloat * 4)(0.35, 0.05, 0.05, 1.0),
+        )
         gluSphere(self.quadric, iris_radius, 30, 30)
 
-        glTranslatef(0.0, 0.0, 0.1)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (GLfloat * 4)(0.0, 0.0, 0.0, 1.0))
+        gl.glTranslatef(0.0, 0.0, 0.1)
+        gl.glMaterialfv(
+            gl.GL_FRONT_AND_BACK,
+            gl.GL_AMBIENT_AND_DIFFUSE,
+            (gl.GLfloat * 4)(0.0, 0.0, 0.0, 1.0),
+        )
         gluSphere(self.quadric, pupil_radius, 20, 20)
-        glPopMatrix()
+        gl.glPopMatrix()
 
         if self.blink > 0.0:
-            lid_color = (GLfloat * 4)(0.8, 0.8, 0.8, 1.0)
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, lid_color)
+            lid_color = (gl.GLfloat * 4)(0.8, 0.8, 0.8, 1.0)
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT_AND_DIFFUSE, lid_color)
 
             lid_radius = eyeball_radius * 1.02
             theta = self.blink * (math.pi / 2.0)
 
-            glPushMatrix()
-            glTranslatef(0.0, 0.0, eyeball_radius * 0.25)
-            glDisable(GL_DEPTH_TEST)
+            gl.glPushMatrix()
+            gl.glTranslatef(0.0, 0.0, eyeball_radius * 0.25)
+            gl.glDisable(gl.GL_DEPTH_TEST)
             self.draw_sphere_segment(lid_radius, 0.0, theta)
             self.draw_sphere_segment(lid_radius, math.pi - theta, math.pi)
-            glEnable(GL_DEPTH_TEST)
-            glPopMatrix()
+            gl.glEnable(gl.GL_DEPTH_TEST)
+            gl.glPopMatrix()
 
-        glPopMatrix()
+        gl.glPopMatrix()
 
     def draw_sphere_segment(
         self, radius: float, theta_start: float, theta_end: float, slices: int = 36, stacks: int = 12
@@ -216,7 +197,7 @@ class EyesApp:
         for i in range(stacks):
             t0 = theta_start + (theta_end - theta_start) * (i / stacks)
             t1 = theta_start + (theta_end - theta_start) * ((i + 1) / stacks)
-            glBegin(GL_QUAD_STRIP)
+            gl.glBegin(gl.GL_QUAD_STRIP)
             for j in range(slices + 1):
                 phi = 2.0 * math.pi * (j / slices)
 
@@ -228,11 +209,11 @@ class EyesApp:
                 y1 = math.cos(t1)
                 z1 = math.sin(t1) * math.sin(phi)
 
-                glNormal3f(x0, y0, z0)
-                glVertex3f(radius * x0, radius * y0, radius * z0)
-                glNormal3f(x1, y1, z1)
-                glVertex3f(radius * x1, radius * y1, radius * z1)
-            glEnd()
+                gl.glNormal3f(x0, y0, z0)
+                gl.glVertex3f(radius * x0, radius * y0, radius * z0)
+                gl.glNormal3f(x1, y1, z1)
+                gl.glVertex3f(radius * x1, radius * y1, radius * z1)
+            gl.glEnd()
 
     def update(self, _dt: float) -> None:
         frame = self.camera.try_get_frame()
