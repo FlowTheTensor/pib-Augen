@@ -1,11 +1,16 @@
 import argparse
 import math
+import os
 import time
 
 import cv2
 import depthai as dai
 import numpy as np
 import pyglet
+
+pyglet.options["shadow_window"] = False
+if "PYGLET_PLATFORM" in os.environ:
+    pyglet.options["platform"] = os.environ["PYGLET_PLATFORM"]
 from pyglet.gl import (
     GL_AMBIENT_AND_DIFFUSE,
     GL_COLOR_BUFFER_BIT,
