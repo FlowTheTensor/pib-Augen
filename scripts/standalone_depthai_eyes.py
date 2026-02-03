@@ -13,7 +13,7 @@ if "PYGLET_PLATFORM" in os.environ:
     pyglet.options["platform"] = os.environ["PYGLET_PLATFORM"]
 
 from pyglet import gl
-from pyglet.gl import gluDeleteQuadric, gluNewQuadric, gluPerspective, gluSphere
+from pyglet.gl import glu
 
 
 class DepthAICamera:
@@ -75,7 +75,7 @@ class EyesApp:
         )
         self.window.push_handlers(self)
 
-        self.quadric = gluNewQuadric()
+        self.quadric = glu.gluNewQuadric()
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_LIGHTING)
         gl.glEnable(gl.GL_LIGHT0)
@@ -123,7 +123,7 @@ class EyesApp:
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
         aspect = self.window.width / max(1.0, self.window.height)
-        gluPerspective(45.0, aspect, 0.1, 100.0)
+        glu.gluPerspective(45.0, aspect, 0.1, 100.0)
 
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
@@ -152,7 +152,7 @@ class EyesApp:
             gl.GL_AMBIENT_AND_DIFFUSE,
             (gl.GLfloat * 4)(0.9, 0.9, 0.9, 1.0),
         )
-        gluSphere(self.quadric, eyeball_radius, 40, 40)
+        glu.gluSphere(self.quadric, eyeball_radius, 40, 40)
 
         gl.glPushMatrix()
         gl.glTranslatef(iris_x, iris_y, iris_z)
@@ -161,7 +161,7 @@ class EyesApp:
             gl.GL_AMBIENT_AND_DIFFUSE,
             (gl.GLfloat * 4)(0.35, 0.05, 0.05, 1.0),
         )
-        gluSphere(self.quadric, iris_radius, 30, 30)
+        glu.gluSphere(self.quadric, iris_radius, 30, 30)
 
         gl.glTranslatef(0.0, 0.0, 0.1)
         gl.glMaterialfv(
@@ -169,7 +169,7 @@ class EyesApp:
             gl.GL_AMBIENT_AND_DIFFUSE,
             (gl.GLfloat * 4)(0.0, 0.0, 0.0, 1.0),
         )
-        gluSphere(self.quadric, pupil_radius, 20, 20)
+        glu.gluSphere(self.quadric, pupil_radius, 20, 20)
         gl.glPopMatrix()
 
         if self.blink > 0.0:
@@ -264,7 +264,7 @@ class EyesApp:
             self.blink = 0.0
 
     def on_close(self) -> None:
-        gluDeleteQuadric(self.quadric)
+        glu.gluDeleteQuadric(self.quadric)
         self.camera.close()
 
 
