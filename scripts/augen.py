@@ -115,7 +115,7 @@ class EyesDemo:
         self.gx = max(-1, min(1, gx)) * 0.7
         self.gy = max(-1, min(1, gy)) * 0.5
 
-        # Blinzeln wie bisher
+        # Nur noch Blinzeln animieren
         t = time.time() - self.start_time
         period = 5.0
         duration = 0.25
@@ -125,9 +125,6 @@ class EyesDemo:
             self.blink = max(0.0, 1.0 - abs(phase - half) / half)
         else:
             self.blink = 0.0
-        # Demo: Augen bewegen sich langsam im Kreis
-        self.gx = math.sin(t * 0.5) * 0.7
-        self.gy = math.cos(t * 0.3) * 0.5
 
     def on_close(self):
         gluDeleteQuadric(self.quadric)
