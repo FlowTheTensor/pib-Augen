@@ -2,6 +2,10 @@
 
 ROS2‑Humble‑Paket zum Vollbild‑Rendern von 3D‑Augen auf einem Raspberry Pi 5 und zum Verfolgen einer Person über ein Tracking‑Topic.
 
+´´´bash
+sudo apt update && sudo apt install mesa-utils libgl1-mesa-glx libglu1-mesa
+´´´´
+
 ## Was es macht
 - Vollbild‑OpenGL‑Rendering (pyglet)
 - Abonniert ein `geometry_msgs/Point`‑Tracking‑Topic
