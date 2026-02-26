@@ -1,4 +1,3 @@
-
 import math
 import time
 import pygame
@@ -107,6 +106,16 @@ class EyesDemo:
             glEnd()
 
     def update(self, _dt=0):
+        # Mauszeiger-Position holen und auf Blickrichtung umrechnen
+        mx, my = pygame.mouse.get_pos()
+        # Normiere auf -1 ... 1 (Fenstermitte = 0)
+        gx = (mx / self.width - 0.5) * 2
+        gy = -((my / self.height - 0.5) * 2)  # y-Achse invertieren
+        # Begrenze die Werte auf realistische Blickwinkel
+        self.gx = max(-1, min(1, gx)) * 0.7
+        self.gy = max(-1, min(1, gy)) * 0.5
+
+        # Blinzeln wie bisher
         t = time.time() - self.start_time
         period = 5.0
         duration = 0.25
