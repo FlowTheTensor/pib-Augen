@@ -65,7 +65,7 @@ class EyesDemo:
 
     def _render_text_surface(self):
         font = pygame.font.Font(None, 28)
-        return font.render(self.scroll_text, True, (0, 0, 0))
+        return font.render(self.scroll_text, True, (0, 0, 0), (255, 255, 255))
 
     def _draw_scrolling_text(self):
         now = time.time()
@@ -77,11 +77,13 @@ class EyesDemo:
         if self.scroll_x + text_w < 0:
             self.scroll_x = float(self.width)
 
-        text_data = pygame.image.tostring(self.text_surface, "RGBA", True)
+        text_data = pygame.image.tostring(self.text_surface, "RGB", True)
+        glDisable(GL_LIGHTING)
         glDisable(GL_DEPTH_TEST)
         glWindowPos2d(int(self.scroll_x), 20)
-        glDrawPixels(text_w, text_h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
+        glDrawPixels(text_w, text_h, GL_RGB, GL_UNSIGNED_BYTE, text_data)
         glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
 
     def adjust_convergence(self, direction):
         if direction > 0:
