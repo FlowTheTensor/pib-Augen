@@ -84,7 +84,9 @@ class EyesDemo:
         surface.fill((255, 255, 255))
         for i, line in enumerate(lines):
             text_line = font.render(line, True, (0, 0, 0))
-            surface.blit(text_line, (0, i * line_height))
+            line_w = text_line.get_width()
+            x = int((max_width - line_w) / 2)
+            surface.blit(text_line, (x, i * line_height))
         return surface
 
     def _draw_static_text(self):
