@@ -18,10 +18,11 @@ class EyesDemo:
         self.gy = 0.0
         self.focus_distance = 20.0
         self.scroll_text = (
-            "Besuchen Sie unsere Technikerschule fuer Elektrotechnik Schwerpunkt "
+            "Besuchen Sie unsere Technikerschule für Elektrotechnik Schwerpunkt "
             "Kuenstliche Intelligenz im Raum 235 und 238"
         )
         self.text_font_size = 60
+        self.text_margin = 40
 
         pygame.init()
         pygame.font.init()
@@ -62,7 +63,29 @@ class EyesDemo:
 
     def _render_text_surface(self):
         font = pygame.font.Font(None, self.text_font_size)
-        return font.render(self.scroll_text, True, (0, 0, 0), (255, 255, 255))
+        max_width = max(100, self.width - (self.text_margin * 2))
+        words = self.scroll_text.split()
+        lines = []
+        current = ""
+        for word in words:
+            candidate = f"{current} {word}".strip()
+            if font.size(candidate)[0] <= max_width:
+                current = candidate
+            else:
+                if current:
+                    lines.append(current)
+                current = word
+        if current:
+            lines.append(current)
+
+        line_height = font.get_linesize()
+        text_h = line_height * len(lines)
+        surface = pygame.Surface((max_width, text_h))
+        surface.fill((255, 255, 255))
+        for i, line in enumerate(lines):
+            text_line = font.render(line, True, (0, 0, 0))
+            surface.blit(text_line, (0, i * line_height))
+        return surface
 
     def _draw_static_text(self):
         text_w, text_h = self.text_surface.get_size()
