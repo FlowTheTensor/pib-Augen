@@ -16,6 +16,7 @@ class EyesDemo:
         self.blink = 0.0
         self.gx = 0.0
         self.gy = 0.0
+        self.focus_distance = 20.0
 
         pygame.init()
         display_flags = DOUBLEBUF | OPENGL
@@ -42,9 +43,14 @@ class EyesDemo:
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         glTranslatef(0.0, 0.0, -6.0)
-        self.draw_eye(-1.7, 0.7, self.gx, self.gy)
-        self.draw_eye(1.7, 0.7, self.gx, self.gy)
+        left_gx = self.gx + self._convergence_offset(-1.7)
+        right_gx = self.gx + self._convergence_offset(1.7)
+        self.draw_eye(-1.7, 0.7, left_gx, self.gy)
+        self.draw_eye(1.7, 0.7, right_gx, self.gy)
         pygame.display.flip()
+
+    def _convergence_offset(self, eye_x):
+        return max(-1.0, min(1.0, -eye_x / self.focus_distance))
 
     def draw_eye(self, cx, cy, gx, gy):
         scale = 1.2
