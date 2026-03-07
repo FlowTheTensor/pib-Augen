@@ -52,6 +52,12 @@ class EyesDemo:
     def _convergence_offset(self, eye_x):
         return max(-1.0, min(1.0, -eye_x / self.focus_distance))
 
+    def adjust_convergence(self, direction):
+        if direction > 0:
+            self.focus_distance = max(2.0, self.focus_distance - 1.0)
+        elif direction < 0:
+            self.focus_distance = min(100.0, self.focus_distance + 1.0)
+
     def draw_eye(self, cx, cy, gx, gy):
         scale = 1.2
         eyeball_radius = 1.0 * scale
@@ -147,6 +153,10 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+                elif event.key == pygame.K_a:
+                    app.adjust_convergence(-1)
+                elif event.key == pygame.K_s:
+                    app.adjust_convergence(1)
         app.update()
         app.on_draw()
         clock.tick(app.fps)
