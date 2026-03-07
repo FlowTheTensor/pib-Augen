@@ -16,7 +16,7 @@ class EyesDemo:
         self.blink = 0.0
         self.gx = 0.0
         self.gy = 0.0
-        self.focus_distance = 20.0
+        self.focus_distance = 3.0
         self.scroll_text = (
             "Besuchen Sie unsere                 Technikerschule für Elektrotechnik Schwerpunkt "
             "Künstliche Intelligenz im Raum 235 und 238"
