@@ -17,8 +17,16 @@ class EyesDemo:
         self.gx = 0.0
         self.gy = 0.0
         self.focus_distance = 20.0
+        self.scroll_text = (
+            "Besuchen Sie unsere Technikerschule fuer Elektrotechnik Schwerpunkt "
+            "Kuenstliche Intelligenz im Raum 235 und 238"
+        )
+        self.scroll_speed = 120.0
+        self.scroll_x = 0.0
+        self.last_text_time = time.time()
 
         pygame.init()
+        pygame.font.init()
         display_flags = DOUBLEBUF | OPENGL
         if self.fullscreen:
             display_info = pygame.display.Info()
@@ -34,6 +42,8 @@ class EyesDemo:
         glLightfv(GL_LIGHT0, GL_POSITION, light_pos)
         glClearColor(1.0, 1.0, 1.0, 1.0)
         self.quadric = gluNewQuadric()
+        self.text_surface = self._render_text_surface()
+        self.scroll_x = float(self.width)
 
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -47,10 +57,31 @@ class EyesDemo:
         right_gx = self.gx + self._convergence_offset(1.7)
         self.draw_eye(-1.7, 0.7, left_gx, self.gy)
         self.draw_eye(1.7, 0.7, right_gx, self.gy)
+        self._draw_scrolling_text()
         pygame.display.flip()
 
     def _convergence_offset(self, eye_x):
         return max(-1.0, min(1.0, -eye_x / self.focus_distance))
+
+    def _render_text_surface(self):
+        font = pygame.font.Font(None, 28)
+        return font.render(self.scroll_text, True, (0, 0, 0))
+
+    def _draw_scrolling_text(self):
+        now = time.time()
+        dt = now - self.last_text_time
+        self.last_text_time = now
+        self.scroll_x -= self.scroll_speed * dt
+
+        text_w, text_h = self.text_surface.get_size()
+        if self.scroll_x + text_w < 0:
+            self.scroll_x = float(self.width)
+
+        text_data = pygame.image.tostring(self.text_surface, "RGBA", True)
+        glDisable(GL_DEPTH_TEST)
+        glWindowPos2d(int(self.scroll_x), 20)
+        glDrawPixels(text_w, text_h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
+        glEnable(GL_DEPTH_TEST)
 
     def adjust_convergence(self, direction):
         if direction > 0:
