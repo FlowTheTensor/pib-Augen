@@ -18,8 +18,8 @@ class EyesDemo:
         self.gy = 0.0
         self.focus_distance = 20.0
         self.scroll_text = (
-            "Besuchen Sie unsere Technikerschule für Elektrotechnik Schwerpunkt "
-            "Kuenstliche Intelligenz im Raum 235 und 238"
+            "Besuchen Sie unsere                 Technikerschule für Elektrotechnik Schwerpunkt "
+            "Künstliche Intelligenz im Raum 235 und 238"
         )
         self.text_font_size = 60
         self.text_margin = 40
