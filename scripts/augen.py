@@ -21,9 +21,7 @@ class EyesDemo:
             "Besuchen Sie unsere Technikerschule fuer Elektrotechnik Schwerpunkt "
             "Kuenstliche Intelligenz im Raum 235 und 238"
         )
-        self.scroll_speed = 120.0
-        self.scroll_x = 0.0
-        self.last_text_time = time.time()
+        self.text_font_size = 60
 
         pygame.init()
         pygame.font.init()
@@ -43,7 +41,6 @@ class EyesDemo:
         glClearColor(1.0, 1.0, 1.0, 1.0)
         self.quadric = gluNewQuadric()
         self.text_surface = self._render_text_surface()
-        self.scroll_x = float(self.width)
 
     def on_draw(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -57,30 +54,24 @@ class EyesDemo:
         right_gx = self.gx + self._convergence_offset(1.7)
         self.draw_eye(-1.7, 0.7, left_gx, self.gy)
         self.draw_eye(1.7, 0.7, right_gx, self.gy)
-        self._draw_scrolling_text()
+        self._draw_static_text()
         pygame.display.flip()
 
     def _convergence_offset(self, eye_x):
         return max(-1.0, min(1.0, -eye_x / self.focus_distance))
 
     def _render_text_surface(self):
-        font = pygame.font.Font(None, 28)
+        font = pygame.font.Font(None, self.text_font_size)
         return font.render(self.scroll_text, True, (0, 0, 0), (255, 255, 255))
 
-    def _draw_scrolling_text(self):
-        now = time.time()
-        dt = now - self.last_text_time
-        self.last_text_time = now
-        self.scroll_x -= self.scroll_speed * dt
-
+    def _draw_static_text(self):
         text_w, text_h = self.text_surface.get_size()
-        if self.scroll_x + text_w < 0:
-            self.scroll_x = float(self.width)
-
+        x = int((self.width - text_w) / 2)
+        y = 20
         text_data = pygame.image.tostring(self.text_surface, "RGB", True)
         glDisable(GL_LIGHTING)
         glDisable(GL_DEPTH_TEST)
-        glWindowPos2d(int(self.scroll_x), 20)
+        glWindowPos2d(x, y)
         glDrawPixels(text_w, text_h, GL_RGB, GL_UNSIGNED_BYTE, text_data)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
